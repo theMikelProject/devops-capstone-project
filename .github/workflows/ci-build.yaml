@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-build:
+  build:                       # <-- 2-space indent
     runs-on: ubuntu-latest
     container: python:3.9-slim
 
@@ -37,8 +37,9 @@ build:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements.txt    
-          # ------------------------------------------------------------
+          pip install -r requirements.txt
+
+      # ------------------------------------------------------------
       # 3. Lint the source code
       # ------------------------------------------------------------
       - name: Lint with flake8
@@ -51,7 +52,6 @@ build:
       # ------------------------------------------------------------
       - name: Run unit tests with Nose
         env:
-          # Tell the app to use the Postgres service container
           DATABASE_URI: postgresql://postgres:pgs3cr3t@localhost:5432/testdb
         run: |
           nosetests -v --with-spec --spec-color --with-coverage --cover-package=service
