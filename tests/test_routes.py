@@ -149,3 +149,56 @@ def test_account_not_found(self):
     resp = self.client.get(f"{BASE_URL}/0")
     self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+# ---------------------------------------------------------------------------
+#  UPDATE
+# ---------------------------------------------------------------------------
+def test_update_account(self):
+    """It should Update an Account"""
+    # 1) create
+    account = {"name": "Bob", "email": "bob@ex.com", "address": "9 First St"}
+    resp = self.client.post(BASE_URL, json=account)
+    self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+    acct_id = resp.get_json()["id"]
+
+    # 2) update – change address
+    updated = dict(account)
+    updated["address"] = "99 Market St"
+    resp = self.client.put(f"{BASE_URL}/{acct_id}", json=updated)
+    self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    self.assertEqual(resp.get_json()["address"], "99 Market St")
+
+def test_update_account_not_found(self):
+    """It should return 404 on update of missing account"""
+    resp = self.client.put(f"{BASE_URL}/0", json={"name": "n/a"})
+    self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+# ---------------------------------------------------------------------------
+#  DELETE
+# ---------------------------------------------------------------------------
+def test_delete_account(self):
+    """It should Delete an Account"""
+    resp = self.client.post(BASE_URL, json={"name": "Del", "email": "d@x", "address": "x"})
+    acct_id = resp.get_json()["id"]
+
+    resp = self.client.delete(f"{BASE_URL}/{acct_id}")
+    self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+    # verify gone
+    resp = self.client.get(f"{BASE_URL}/{acct_id}")
+    self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+def test_delete_account_not_found(self):
+    resp = self.client.delete(f"{BASE_URL}/0")
+    self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+# ---------------------------------------------------------------------------
+#  LIST
+# ---------------------------------------------------------------------------
+def test_list_all_accounts(self):
+    """It should List all Accounts"""
+    for i in range(3):
+        self.client.post(BASE_URL, json={"name": f"n{i}", "email": f"e{i}@x", "address": "a"})
+    resp = self.client.get(BASE_URL)
+    self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    data = resp.get_json()
+    self.assertEqual(len(data), 3)
